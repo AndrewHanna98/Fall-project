@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Versioning System</title>
+  <style>
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-bottom: 10px;
+    }
+
+    .version-details {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Advanced Versioning System</h1>
+  <textarea id="content" oninput="trackChanges()"></textarea>
+  <button onclick="saveVersion()">Save Version</button>
+  <button onclick="deleteCurrentVersion()">Delete Current Version</button>
+  <label for="version-select">Select Version:</label>
+  <select id="version-select" onchange="loadVersion()" onclick="displaySelectedVersion()">
+    <option value="-1">Select</option>
+  </select>
+
+  <div class="version-details">
+    <h2>Selected Version Details</h2>
+    <p><strong>Initial Text:</strong> <span id="initial-text-display"></span></p>
+    <p><strong>Modified Text:</strong> <span id="modified-text-display"></span></p>
+    <p><strong>Timestamp:</strong> <span id="timestamp-display"></span></p>
+  </div>
+
+  <script>
+    let versions = [];
+    let currentIndex = -1;
+    let initialText = '';
+
+    function trackChanges() {
+      const modifiedText = document.getElementById('content').value;
+      if (currentIndex >= 0) {
+        versions[currentIndex].modifiedText = modifiedText;
+      }
+    }
+
+    function saveVersion() {
+      const content = document.getElementById('content').value;
+      if (content.trim() === '') {
+        alert('Content cannot be empty.');
+        return;
+      }
+
+      const timestamp = new Date().toLocaleString();
+      const version = { initialText, modifiedText: content, timestamp };
+
+      versions.push(version);
+      currentIndex++;
+
+      updateVersionSelect();
+      initialText = content;
+      displaySelectedVersion(); // Display details of the latest version
+    }
+
+    function deleteCurrentVersion() {
+      if (currentIndex === -1) {
+        alert('No version to delete.');
+        return;
+      }
+
+      if (confirm('Are you sure you want to delete the current version?')) {
+        versions.splice(currentIndex, 1);
+        currentIndex--;
+
+        updateVersionSelect();
+        loadVersion();
+        displaySelectedVersion(); // Display details of the updated version
+      }
+    }
+
+    function updateVersionSelect() {
+      const versionSelect = document.getElementById('version-select');
+      versionSelect.innerHTML = '<option value="-1">Select</option>';
+
+      for (let i = 0; i < versions.length; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `Version ${i + 1} - ${versions[i].timestamp}`;
+        versionSelect.appendChild(option);
+      }
+
+      versionSelect.value = currentIndex;
+    }
+
+    function loadVersion() {
+      const versionSelect = document.getElementById('version-select');
+      const selectedVersion = parseInt(versionSelect.value);
+
+      if (selectedVersion >= 0 && selectedVersion < versions.length) {
+        currentIndex = selectedVersion;
+        document.getElementById('content').value = versions[selectedVersion].modifiedText;
+        displaySelectedVersion();
+      }
+    }
+
+    function displaySelectedVersion() {
+      const initialTextDisplay = document.getElementById('initial-text-display');
+      const modifiedTextDisplay = document.getElementById('modified-text-display');
+      const timestampDisplay = document.getElementById('timestamp-display');
+
+      if (currentIndex >= 0 && currentIndex < versions.length) {
+        initialTextDisplay.textContent = versions[currentIndex].initialText;
+        modifiedTextDisplay.textContent = versions[currentIndex].modifiedText;
+        timestampDisplay.textContent = versions[currentIndex].timestamp;
+      } else {
+        initialTextDisplay.textContent = '';
+        modifiedTextDisplay.textContent = '';
+        timestampDisplay.textContent = '';
+      }
+    }
+  </script>
+</body>
+</html>
